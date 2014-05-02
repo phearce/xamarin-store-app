@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>{66F3AFB2-98C6-474E-B156-0FD0E3FA070A}</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>XamarinStore.Shared</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)SSO\UserModels.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SSO\XamarinSSOClient.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\Country.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\Order.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\OrderResult.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\Product.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\ProductColor.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\ProductSize.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\User.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\ListExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Data\Color.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Data\EventArgs.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Data\FileCache.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Data\Gravatar.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Data\WebService.cs" />
+  </ItemGroup>
+</Project>
