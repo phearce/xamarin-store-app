@@ -46,4 +46,11 @@
                 match t.IsFaulted with
                 | true -> raise t.Exception
                 | arg -> ()
-            task.ContinueWith continuation |> Async.AwaitTask  
+            task.ContinueWith continuation |> Async.AwaitTask
+
+    module List =
+        let removeAt index input =
+            input 
+            |> List.mapi (fun i el -> (i <> index, el)) 
+            |> List.filter fst 
+            |> List.map snd

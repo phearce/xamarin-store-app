@@ -39,8 +39,7 @@ type GroceryListAdapter(context:Context) =
                         swipper.SwipeGestureEnd <- fun () -> (parent :?> ListView).RequestDisallowInterceptTouchEvent false
                         swipper.ItemSwipped <- fun () -> if tempView.Parent <> null then
                                                              let p = (parent :?> ListView).GetPositionForView tempView
-                                                             let productToRemove = WebService.CurrentOrder.Products.[p]
-                                                             WebService.CurrentOrder <- WebService.CurrentOrder.WithoutProduct productToRemove
+                                                             WebService.CurrentOrder <- WebService.CurrentOrder.WithoutProductAt p
                                                              this.NotifyDataSetChanged ()
                         tempView
 

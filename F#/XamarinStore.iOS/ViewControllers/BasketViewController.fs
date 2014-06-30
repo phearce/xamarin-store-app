@@ -124,7 +124,9 @@ type BasketViewTableViewSource() =
 
     override this.CommitEditingStyle (tableView, editingStyle, indexPath) =
         if editingStyle = UITableViewCellEditingStyle.Delete then
-            WebService.CurrentOrder <- WebService.CurrentOrder.WithoutProduct (WebService.CurrentOrder.Products.[indexPath.Row])
+            
+            WebService.CurrentOrder <- WebService.CurrentOrder.WithoutProductAt indexPath.Row
+
             tableView.DeleteRows ([| indexPath |], UITableViewRowAnimation.Fade)
             this.RowDeleted ()
 

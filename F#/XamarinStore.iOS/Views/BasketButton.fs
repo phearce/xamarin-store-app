@@ -11,6 +11,7 @@ open MonoTouch.CoreAnimation
 open System.Drawing
 open MonoTouch.Foundation
 
+[<AllowNullLiteral>]
 type BasketButton() as this =
     inherit UIControl()
 

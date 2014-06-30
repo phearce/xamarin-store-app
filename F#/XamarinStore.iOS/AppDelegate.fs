@@ -13,43 +13,62 @@ open FileCache
 open Product
 
 [<Register ("AppDelegate")>]
-type AppDelegate () as this =
+type AppDelegate () =
     inherit UIApplicationDelegate ()
 
-    let window = new UIWindow (UIScreen.MainScreen.Bounds)
+    let mutable window = null
     let mutable navigation:UINavigationController = null
+    let mutable button:BasketButton = null
 
-    let button = new BasketButton(Frame = new RectangleF(0.0f, 0.0f, 44.0f, 44.0f))
-
-    do button.TouchUpInside.Add(fun _ -> this.ShowBasket())
-
-    member this.CreateBasketButton () =
+    let createBasketButton () =
         button.ItemsCount <- WebService.CurrentOrder.Products.Length
         new UIBarButtonItem(button)
 
-    member this.ShowBasket () =
-        let basketVc = new BasketViewController()
-        basketVc.Checkout <- fun () -> this.ShowLogin ()
-        navigation.PushViewController (basketVc, true)
+    let orderCompleted () =
+        navigation.PopToRootViewController true |> ignore
 
-    member this.ShowProductDetail (product: Product) =
-        let productDetails = new ProductDetailViewController(product, fun ()->this.CreateBasketButton())
+    let proccessOrder() =
+        let processing = new ProcessingViewController (WebService.Shared.CurrentUser, OrderPlaced = orderCompleted)
+        navigation.PresentViewController (new UINavigationController(processing), true, null)
+
+    let showAddress () =
+        let addreesVc = new ShippingAddressViewController (WebService.Shared.CurrentUser, ShippingComplete = proccessOrder)
+        navigation.PushViewController (addreesVc, true)
+
+    let showLogin () =
+        let loginVc = new LoginViewController (LoginSucceeded = showAddress)
+        navigation.PushViewController (loginVc, true)
+
+    let showBasket () =
+        let basketVc = new BasketViewController(Checkout = showLogin)
+        navigation.PushViewController (basketVc, true)
+    
+    let updateProductsCount() =
+        button.UpdateItemsCount WebService.CurrentOrder.Products.Length
+
+    let showProductDetail (product: Product) =
+        let productDetails = new ProductDetailViewController(product, createBasketButton)
         productDetails.AddToBasket <- fun product->
                                         WebService.CurrentOrder <- { WebService.CurrentOrder with Products = product::WebService.CurrentOrder.Products }
-                                        this.UpdateProductsCount()
+                                        updateProductsCount()
 
         navigation.PushViewController (productDetails, true)
 
     // This method is invoked when the application is ready to run.
     override this.FinishedLaunching (app, options) =
+
+        window <- new UIWindow (UIScreen.MainScreen.Bounds)
+        button <- new BasketButton(Frame = new RectangleF(0.0f, 0.0f, 44.0f, 44.0f))
+        button.TouchUpInside.Add(fun _ -> showBasket())
+
         FileCache.saveLocation <- System.IO.Directory.GetParent(Environment.GetFolderPath(Environment.SpecialFolder.Personal)).ToString () + "/tmp"
 
         UIApplication.SharedApplication.SetStatusBarStyle (UIStatusBarStyle.LightContent, false)
 
         UINavigationBar.Appearance.SetTitleTextAttributes(new UITextAttributes (TextColor = UIColor.White))
 
-        let productVc = new ProductListViewController (fun ()->this.CreateBasketButton())
-        productVc.ProductTapped <-fun product-> this.ShowProductDetail product
+        let productVc = new ProductListViewController (createBasketButton)
+        productVc.ProductTapped <-fun product-> showProductDetail product
         navigation <- new UINavigationController (productVc)
 
         navigation.NavigationBar.TintColor <- UIColor.White
@@ -59,27 +78,6 @@ type AppDelegate () as this =
         
         window.MakeKeyAndVisible ()
         true
-
-    member this.ShowLogin () =
-        let loginVc = new LoginViewController ()
-        loginVc.LoginSucceeded <- fun _ -> this.ShowAddress ()
-        navigation.PushViewController (loginVc, true)
-
-    member this.ShowAddress () =
-        let addreesVc = new ShippingAddressViewController (WebService.Shared.CurrentUser)
-        addreesVc.ShippingComplete <- fun _ -> this.ProccessOrder ()
-        navigation.PushViewController (addreesVc, true)
-
-    member this.ProccessOrder() =
-        let processing = new ProcessingViewController (WebService.Shared.CurrentUser)
-        processing.OrderPlaced <- fun _ -> this.OrderCompleted ()
-        navigation.PresentViewController (new UINavigationController(processing), true, null)
-
-    member this.OrderCompleted () =
-        navigation.PopToRootViewController true |> ignore
-
-    member this.UpdateProductsCount() =
-        button.UpdateItemsCount WebService.CurrentOrder.Products.Length
 
 module Main =
     [<EntryPoint>]

@@ -3,11 +3,9 @@
     open Product
     open System.Linq
     open Helpers
-
     open Newtonsoft.Json
-
     open System.Runtime.Serialization
-        
+          
     [<DataContract;CLIMutable>]
     [<JsonObject(MemberSerialization=MemberSerialization.OptOut)>]
     type Order = 
@@ -24,6 +22,8 @@
           Country : string
           [<IgnoreDataMemberAttribute>]
           Notification: (Order->unit) option }
+
+
 
         //Initializes an order with all unspecified fields set to empty string
         static member CreateOrder(?Products, ?SsoToken, ?ShippingName, ?Email, ?Address1, ?Address2, ?City, ?State, ?ZipCode, ?Phone, ?Country, ?Notification) = 
@@ -65,14 +65,13 @@
             temp.SendNotification()
             temp
 
-        member this.WithoutProduct product =
-            if this.Products.Contains(product) then
-                let newOrder = { this with Products = this.Products 
-                                                      |> List.filter (fun x->(not (x = product))) }
+        member this.WithoutProductAt (i:int) =
+            if this.Products.Length >= i then
+                let filteredProducts = this.Products |> List.removeAt i
+                let newOrder = { this with Products = filteredProducts }
                 newOrder.SendNotification()
                 newOrder
-            else
-                this
+            else this
                 
     [<DataContract;CLIMutable>]
     [<JsonObject(MemberSerialization=MemberSerialization.OptOut)>]
