@@ -1,22 +1,25 @@
 using System;
 using System.Linq;
-using System.Collections.Generic;
-using MonoTouch.UIKit;
 using System.Drawing;
+using System.Collections.Generic;
+
+using MonoTouch.UIKit;
 
 namespace XamarinStore
 {
 	public class StringUIPicker : UIPickerView
 	{
 		public event EventHandler SelectedItemChanged;
+
 		public StringUIPicker ()
 		{
 		}
+
 		string[] items;
-		public IEnumerable<string> Items
-		{
+
+		public IEnumerable<string> Items {
 			get{ return items; }
-			set{ 
+			set { 
 				items = value.ToArray ();
 				Model = new PickerModel {
 					Items = items,
@@ -24,10 +27,12 @@ namespace XamarinStore
 				};
 			}
 		}
+
 		int currentIndex;
+
 		public int SelectedIndex {
 			get{ return currentIndex; }
-			set{
+			set {
 				if (currentIndex == value)
 					return;
 				currentIndex = value;
@@ -36,45 +41,80 @@ namespace XamarinStore
 					SelectedItemChanged (this, EventArgs.Empty);
 			}
 		}
-		public string SelectedItem
-		{
+
+		public string SelectedItem {
 			get { 
 				return items.Length <= currentIndex ? "" : items [currentIndex];
 			}
 			set {
-				if(!items.Contains(value))
+				if (!items.Contains (value))
 					return;
 				currentIndex = Array.IndexOf (items, value);
 			}
 		}
 
-		UIActionSheet sheet;
-		public void ShowPicker(UIView viewForPicker)
+		UIView actionSheet;
+
+		public void ShowPicker ()
 		{
-			sheet = new UIActionSheet();
-
-			sheet.AddSubview(this);
-
-			var toolbarPicker = new UIToolbar (new RectangleF (0, 0, viewForPicker.Frame.Width, 44)) {
-				Items = new UIBarButtonItem[] {
-					new UIBarButtonItem (UIBarButtonSystemItem.FlexibleSpace), 
-					new UIBarButtonItem (UIBarButtonSystemItem.Done, (sender, args) => sheet.DismissWithClickedButtonIndex (0, true)), 
-				},
-				BarTintColor = this.BackgroundColor,
+			actionSheet = new UIView () {
+				BackgroundColor = UIColor.Clear
 			};
 
-			sheet.AddSubviews(toolbarPicker);
+			UIView parentView = UIApplication.SharedApplication.KeyWindow.RootViewController.View;
 
-			sheet.BackgroundColor = UIColor.Clear;
-			sheet.ShowInView(viewForPicker);
-			UIView.Animate(.25, () => sheet.Bounds = new RectangleF (0, 0, viewForPicker.Frame.Width, 485));
+			// Creates a transparent grey background who catches the touch actions (and add more style). 
+			UIView dimBackgroundView = new UIView (parentView.Bounds) {
+				BackgroundColor = UIColor.Gray.ColorWithAlpha (0.5f)
+			};
 
+			float titleBarHeight = 44;
+			var actionSheetSize = new SizeF (parentView.Frame.Width, this.Frame.Height + titleBarHeight);
+			var actionSheetFrameHidden = new RectangleF (0, parentView.Frame.Height, actionSheetSize.Width, actionSheetSize.Height);
+			var actionSheetFrameDisplayed = new RectangleF (0, parentView.Frame.Height - actionSheetSize.Height, actionSheetSize.Width, actionSheetSize.Height);
+
+			// Hide the action sheet before we animate it so it comes from the bottom.
+			actionSheet.Frame = actionSheetFrameHidden;
+
+			this.Frame = new RectangleF (0, 1, actionSheetSize.Width, actionSheetSize.Height - titleBarHeight);
+
+			var toolbarPicker = new UIToolbar (new RectangleF (0, 0, actionSheet.Frame.Width, titleBarHeight)) {
+				ClipsToBounds = true,
+				Items = new UIBarButtonItem[] {
+					new UIBarButtonItem (UIBarButtonSystemItem.FlexibleSpace), 
+					new UIBarButtonItem (UIBarButtonSystemItem.Done, (sender, args) => {
+						UIView.Animate (.25, 
+							() => {
+								actionSheet.Frame = actionSheetFrameHidden;
+							},
+							() => {
+								dimBackgroundView.RemoveFromSuperview ();
+								actionSheet.RemoveFromSuperview ();
+							});
+					})
+				}
+			};
+
+			// Creates a blur background using the toolbar trick.
+			var toolbarBg = new UIToolbar (new RectangleF (0, 0, actionSheet.Frame.Width, actionSheet.Frame.Height)) {
+				ClipsToBounds = true
+			};
+
+			actionSheet.AddSubviews (new UIView[] { toolbarBg, this, toolbarPicker });
+
+			parentView.AddSubviews (new UIView[] { dimBackgroundView, actionSheet });
+
+			parentView.BringSubviewToFront (actionSheet);
+
+			UIView.Animate (.25, () => {
+				actionSheet.Frame = actionSheetFrameDisplayed;
+			});
 		}
-
 
 		class PickerModel : UIPickerViewModel
 		{
 			public StringUIPicker Parent { get; set; }
+
 			public string[] Items = new string[0];
 
 			public override int GetComponentCount (UIPickerView picker)
@@ -89,7 +129,6 @@ namespace XamarinStore
 
 			public override string GetTitle (UIPickerView picker, int row, int component)
 			{
-
 				return Items [row];
 			}
 
