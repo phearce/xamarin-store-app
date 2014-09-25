@@ -79,7 +79,7 @@ namespace XamarinStore
 				return;
 
 			picker.SelectedIndex = Items.ToList().IndexOf (DetailText);
-			picker.ShowPicker (ViewForPicker);
+			picker.ShowPicker ();
 		}
 	}
 }
