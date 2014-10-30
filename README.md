@@ -1,7 +1,7 @@
 Run a C# app, get a C# shirt
 =============
 
-[X Studio Mac]
+[X Studio Mac] 
 
 Get a snazzy shirt from the Xamarin Store App in just three simple steps, for free!
 
